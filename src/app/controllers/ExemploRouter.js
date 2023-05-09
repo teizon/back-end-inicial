@@ -77,7 +77,7 @@ router.put("/:projectId", (req, res) => {
       });
 });
 
-router.delete("/:projectId", (req, res) => {
+router.delete("/delete/:projectId", (req, res) => {
   ProjectSchema.findByIdAndRemove(req.params.projectId) 
   .then
     (() => {
