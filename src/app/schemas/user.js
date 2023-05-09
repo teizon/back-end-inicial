@@ -23,4 +23,13 @@ const UserSchema = new mongoose.Schema({
     },
 });
 
+UserSchema.pre("save", function(next) {
+    bcrypt.hash(this.password, 10).then(hash => {
+        this.password = hash;
+        next();
+    }).catch(error => {
+        console.error("error hashing password", error);
+    })
+})
+
 export default mongoose.model('user', UserSchema);
