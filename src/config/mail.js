@@ -1,8 +1,8 @@
 export default {
-  host: 'smtp.gmail.com',
-  port: 587,
+  host: "sandbox.smtp.mailtrap.io",
+  port: 2525,
   auth: {
-    user: 'dashboard@compjunior.com.br',
-    pass: 'D@sh.CPJR.2020',
+    user: "77562ed2b949bb",
+    pass: "8df00b5686dccf"
   },
 };

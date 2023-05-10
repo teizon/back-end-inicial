@@ -3,7 +3,8 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import authConfig from "@/config/auth";
 import jwt from "jsonwebtoken";
-import user from "@/app/schemas/user";
+import Mailer from "@/modules/Mailer";
+import User from "@/app/schemas/user";
 import { error } from 'console';
 
 const router = new Router();
@@ -18,12 +19,12 @@ const generateToken = params => {
 router.post("/register", (req, res) => {
     const { email, name, password } = req.body;
 
-    user.findOne({ email })
+    User.findOne({ email })
         .then( userData => { 
             if (userData){
                 return res.status(400).send({error: "user already exists"})
             }else{
-                user.create({ email, name, password } )
+                User.create({ email, name, password } )
                     .then(user => { 
                         //user.password = undefined;
                         return res.send(user);
@@ -41,7 +42,7 @@ router.post("/register", (req, res) => {
 router.post("/login", (req, res) => {
     const {email, password } = req.body;
 
-    user.findOne({ email })
+    User.findOne({ email })
     .select("+password")
         .then( user => {
             if (user){ 
@@ -69,7 +70,45 @@ router.post("/login", (req, res) => {
 });
 
 router.post("/forgot-password", (req, res) => {
+    const {email} =req.body;
 
+    User.findOne({ email })
+        .then( user => { 
+            if (user){ 
+                const token = crypto.randomBytes(20).toString("hex");
+                const expiration = new Date();
+                expiration.setHours(new Date().getHours() + 3);
+
+                User.findByIdAndUpdate(user.id, {
+                    $set: {
+                        passwordResetToken: token,
+                        passwordResetTokenExpiration: expiration
+                    }
+                }).then(() => { 
+                    Mailer.sendMail({ 
+                        to: email,
+                        from: "webmaster@testexpress.com",
+                        template: "auth/forgot_password",
+                        context: {token}
+                    }, error => {
+                        if(error){
+                            console.error("erro ao enviar o email", error);
+                            return res.status(400)({error: "fail sending recover password mail"});
+                        }else{
+                            return res.send();
+                        }
+                    })
+                }).catch(error => {
+                    console.error("erro ao salvar o token de recuperacao de senha", error);
+                    return res.status(500).send({error: "internal server error"});
+                })
+            }else{ 
+                return res.status(404).send({error: "user not found"});
+            }
+        }).catch( error => {
+            console.error("erro no forgot password", error);
+            return res.status(500).send({ error: "internal server error" })
+        })            
 });
 
 router.post("/reset-password", (req, res) => {
