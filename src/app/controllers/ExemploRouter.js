@@ -92,7 +92,7 @@ router.delete("/delete/:projectId", AuthMiddleware, (req, res) => {
 
 router.post(
   "/image/featured-image/:projectId",
-  [AuthMiddleware, Multer.single("image")],
+  [AuthMiddleware, Multer.single("featured-image")],
   (req, res) => {
     const { file } = req;
     if (file) {
@@ -105,7 +105,7 @@ router.post(
           return project.save();
         })
         .then(project => {
-          res.send({ project });
+          res.send({ ProjectSchema });
         })
         .catch(error => {
           console.error("Erro ao associar a imagem ao projeto", error);
