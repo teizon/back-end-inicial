@@ -6,7 +6,7 @@ import Multer  from '@/app/middlewares/Multer';
 
 const router = new Router();
 
-router.get("/", (req, res) => {  // get para todos projetos
+router.get("/get", (req, res) => {  // get para todos projetos
   ProjectSchema.find()          // sem parametros
     .then(projects => {
       res.send(projects) ;
@@ -23,7 +23,7 @@ router.get("/", (req, res) => {  // get para todos projetos
 
 });
 
-router.get('/:projectSlug', (req, res) => { // get para projeto especifico
+router.get('/get/:projectSlug', (req, res) => { // get para projeto especifico
   ProjectSchema.findOne({slug: req.params.projectSlug})
   .then(project => {
     res.send(project) ;
@@ -57,7 +57,7 @@ router.post("/post", AuthMiddleware, (req, res) => {
       });
 });
 
-router.put("/:projectId", AuthMiddleware, (req, res) => {
+router.put("/put/:projectId", AuthMiddleware, (req, res) => {
   const {title, description, category} = req.body;
   let slug = undefined;
   if(title){
@@ -90,9 +90,32 @@ router.delete("/delete/:projectId", AuthMiddleware, (req, res) => {
   })
 });
 
-router.post("/image", Multer.single("image"),(req, res) =>{ 
-    console.log(req);
-    res.send();
-})
+router.post(
+  "/image/featured-image/:projectId",
+  [AuthMiddleware, Multer.single("image")],
+  (req, res) => {
+    const { file } = req;
+    if (file) {
+      ProjectSchema.findById(req.params.projectId)
+        .then(project => {
+          if (!project) {
+            throw new Error("Projeto não encontrado");
+          }
+          project.featuredImage = file.path;
+          return project.save();
+        })
+        .then(project => {
+          res.send({ project });
+        })
+        .catch(error => {
+          console.error("Erro ao associar a imagem ao projeto", error);
+          res.status(500).send({ error: "Ocorreu um erro, tente novamente" });
+        });
+    } else {
+      res.status(400).send({ error: "Nenhuma imagem enviada" });
+    }
+  }
+);
+
 
 export default router;

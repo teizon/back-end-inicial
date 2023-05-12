@@ -18,7 +18,11 @@ const ProjectSchema = new mongoose.Schema({
     category: { 
         type: String,
         required: true,
+    },featuredImage: {
+        type: String,
+        required: false,
     },
+    images: [{type: String}],
     createdAt: { 
         type: Date,
         default: Date.now,

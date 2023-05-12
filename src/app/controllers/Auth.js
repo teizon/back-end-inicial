@@ -113,6 +113,7 @@ router.post("/forgot-password", (req, res) => {
 
 router.post("/reset-password", (req, res) => {
     const { email, token, newPassword } = req.body;
+
     User.findOne({ email })
       .select("passwordResetToken passwordResetTokenExpiration")
       .then((user) => {
