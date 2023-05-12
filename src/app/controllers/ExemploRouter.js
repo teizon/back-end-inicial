@@ -2,6 +2,7 @@ import { Router } from 'express';
 import ProjectSchema from '@/app/schemas/Exemplo';
 import Slugify from '@/utils/Slugify';
 import AuthMiddleware from "@/app/middlewares/Auth";
+import Multer  from '@/app/middlewares/Multer';
 
 const router = new Router();
 
@@ -88,5 +89,10 @@ router.delete("/delete/:projectId", AuthMiddleware, (req, res) => {
     req.status(400).send({message: "erro ao remover projeto, tente novamente"})
   })
 });
+
+router.post("/image", Multer.single("image"),(req, res) =>{ 
+    console.log(req);
+    res.send();
+})
 
 export default router;
