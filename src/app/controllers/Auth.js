@@ -112,7 +112,41 @@ router.post("/forgot-password", (req, res) => {
 });
 
 router.post("/reset-password", (req, res) => {
-
+    const { email, token, newPassword } = req.body;
+    User.findOne({ email })
+      .select("passwordResetToken passwordResetTokenExpiration")
+      .then((user) => {
+        if (user) {
+          if (
+            token != user.passwordResetToken ||
+            Date.now() > user.passwordResetTokenExpiration
+          ) {
+            return res.status(400).send({ error: "Invalid token" });
+          } else {
+            user.passwordResetToken = undefined;
+            user.passwordResetTokenExpiration = undefined;
+            user.password = newPassword;
+  
+            user
+              .save()
+              .then(() => {
+                return res.send({ message: "Senha trocada com sucesso" });
+              })
+              .catch((error) => {
+                console.error("Erro ao salvar nova senha do usuário", error);
+                return res.status(500).send({ error: "Internal server error" });
+              });
+          }
+        } else {
+          return res.status(404).send({ error: "User not found" });
+        }
+      })
+      .catch((error) => {
+        console.error("Erro no forgot password", error);
+        return res.status(500).send({ error: "Internal server error" });
+      });
 });
+  
+  
 
 export default router;
