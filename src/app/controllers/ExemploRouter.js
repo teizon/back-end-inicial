@@ -117,5 +117,38 @@ router.post(
   }
 );
 
+router.post(
+  "/images/featured-images/:projectId",
+  [AuthMiddleware, Multer.array("featured-images")],
+  (req, res) => {
+    const { files } = req;
+    if (files && files.length > 0) {
+      const projectImages = [];
+
+      files.forEach(file => {
+        projectImages.push(file.path);
+      });
+
+      ProjectSchema.findById(req.params.projectId)
+        .then(project => {
+          if (!project) {
+            throw new Error("Projeto não encontrado");
+          }
+          project.featuredImages = projectImages;
+          return project.save();
+        })
+        .then(project => {
+          res.send({ project });
+        })
+        .catch(error => {
+          console.error("Erro ao associar as imagens ao projeto", error);
+          res.status(500).send({ error: "Ocorreu um erro, tente novamente" });
+        });
+    } else {
+      res.status(400).send({ error: "Nenhuma imagem enviada" });
+    }
+  }
+);
+
 
 export default router;
