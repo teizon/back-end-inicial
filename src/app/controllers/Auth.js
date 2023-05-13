@@ -5,6 +5,8 @@ import authConfig from "@/config/auth";
 import jwt from "jsonwebtoken";
 import Mailer from "@/modules/Mailer";
 import User from "@/app/schemas/user";
+import AuthMiddleware from "@/app/middlewares/Auth";
+import Multer  from '@/app/middlewares/Multer';
 import { error } from 'console';
 
 const router = new Router();
@@ -16,28 +18,40 @@ const generateToken = params => {
     );     
 }
 
-router.post("/register", (req, res) => {
-    const { email, name, password } = req.body;
+router.post("/register",
+    [AuthMiddleware, Multer.single("profile-image")],
+    (req, res) => {
+        const { name, email, password } = req.body;
+        let featuredImage = '';
 
-    User.findOne({ email })
-        .then( userData => { 
-            if (userData){
-                return res.status(400).send({error: "user already exists"})
-            }else{
-                User.create({ email, name, password } )
-                    .then(user => { 
-                        //user.password = undefined;
-                        return res.send(user);
-                    }).catch( error => {
-                        console.error("erro ao salvar o usuario", error);
-                        return res.status(400).send({error: "registration failed"})
-                    }) 
-            }
-    }).catch( error => {
-        console.error("erro ao consultar o usuario no banco de dados", err);
-        res.status(500).send({error: "registration failed"});
-    })
-});
+        if (req.file) {
+            featuredImage = req.file.path;
+        }
+
+        User.findOne({ email })
+            .then(userData => {
+                if (userData) {
+                    return res.status(400).send({ error: "User already exists" });
+                } else {
+                    const newUser = new User({ name, email, password, featuredImage });
+
+                    newUser.save()
+                        .then(user => {
+                            // user.password = undefined; // Opcional: se você quiser ocultar a senha no retorno
+                            return res.send(user);
+                        })
+                        .catch(error => {
+                            console.error("Erro ao salvar o usuário", error);
+                            return res.status(400).send({ error: "Registration failed" });
+                        });
+                }
+            })
+            .catch(error => {
+                console.error("Erro ao consultar o usuário no banco de dados", error);
+                res.status(500).send({ error: "Registration failed" });
+            });
+    });
+
 
 router.post("/login", (req, res) => {
     const {email, password } = req.body;
@@ -149,5 +163,21 @@ router.post("/reset-password", (req, res) => {
 });
   
   
+router.get("/user/:userId/profile-image", (req, res) => {
+    const { userId } = req.params;
+  
+    User.findById(userId)
+      .then(user => {
+        if (!user || !user.featuredImage) {
+          return res.status(404).send({ error: "User or image not found" });
+        }
+  
+        res.sendFile(user.featuredImage);
+      })
+      .catch(error => {
+        console.error("Error retrieving user image", error);
+        res.status(500).send({ error: "Failed to retrieve user image" });
+      });
+  }); 
 
 export default router;
