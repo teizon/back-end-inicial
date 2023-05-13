@@ -8,8 +8,16 @@ const router = new Router();
 
 router.get("/get", (req, res) => {  // get para todos projetos
   ProjectSchema.find()          // sem parametros
-    .then(projects => {
-      res.send(projects) ;
+    .then(data => {
+      const projects = data.map(project => {
+        return {
+          title: project.title,
+          category: project.category,
+          slug: project.slug,
+          featuredImage: project.featuredImage
+        }
+      });
+      res.send(projects)
     })
     .catch(error => {
       console.error("erro ao salvar novo projeto no banco de dados", error);
@@ -91,21 +99,22 @@ router.delete("/delete/:projectId", AuthMiddleware, (req, res) => {
 });
 
 router.post(
-  "/image/featured-image/:projectId",
+  "/featured-image/:projectId",
   [AuthMiddleware, Multer.single("featured-image")],
   (req, res) => {
     const { file } = req;
     if (file) {
-      ProjectSchema.findById(req.params.projectId)
+      ProjectSchema.findByIdAndUpdate(
+        req.params.projectId,
+        { featuredImage: file.path },
+        { new: true }
+      )
         .then(project => {
           if (!project) {
             throw new Error("Projeto não encontrado");
+          }else{
+            return res.send({ project });
           }
-          project.featuredImage = file.path;
-          return project.save();
-        })
-        .then(project => {
-          res.send({ ProjectSchema });
         })
         .catch(error => {
           console.error("Erro ao associar a imagem ao projeto", error);
@@ -118,7 +127,7 @@ router.post(
 );
 
 router.post(
-  "/images/featured-images/:projectId",
+  "featured-images/:projectId",
   [AuthMiddleware, Multer.array("featured-images")],
   (req, res) => {
     const { files } = req;
@@ -138,7 +147,7 @@ router.post(
           return project.save();
         })
         .then(project => {
-          res.send({ project });
+          return res.send({ project });
         })
         .catch(error => {
           console.error("Erro ao associar as imagens ao projeto", error);
