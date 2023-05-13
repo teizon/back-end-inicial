@@ -127,7 +127,7 @@ router.post(
 );
 
 router.post(
-  "featured-images/:projectId",
+  "/featured-images/:projectId",
   [AuthMiddleware, Multer.array("featured-images")],
   (req, res) => {
     const { files } = req;
