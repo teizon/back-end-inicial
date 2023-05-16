@@ -8,6 +8,7 @@ import User from "@/app/schemas/user";
 import AuthMiddleware from "@/app/middlewares/Auth";
 import Multer  from '@/app/middlewares/Multer';
 import { error } from 'console';
+import path from 'path';
 
 const router = new Router();
 
@@ -21,21 +22,15 @@ const generateToken = params => {
 
 
 router.post("/register",
-    [Multer.single("profile-image")],
     (req, res) => {
         const { name, email, password, isAdmin } = req.body;
-        let featuredImage = '';
-
-        if (req.file) {
-            featuredImage = req.file.path;
-        }
 
         User.findOne({ email })
             .then(userData => {
                 if (userData) {
                     return res.status(400).send({ error: "User already exists" });
                 } else {
-                    const newUser = new User({ name, email, password, featuredImage, isAdmin});
+                    const newUser = new User({ name, email, password, isAdmin});
 
                     newUser.save()
                         .then(user => {
@@ -53,6 +48,29 @@ router.post("/register",
                 res.status(500).send({ error: "Registration failed" });
             });
     });
+
+    router.post("/put/addImage/:userId", Multer.single('profileImage'), (req, res, next) => {
+        const { file } = req;
+        if (file) {
+            User.findByIdAndUpdate(
+            req.params.userId,
+            { profileImage: file.path },
+            { new: true }
+      ).then(user => {
+        if (!user) {
+          throw new Error("usuario não encontrado");
+        }else{
+          return res.send({ user });
+        }
+      })
+      .catch(error => {
+        console.error("Erro ao associar a imagem ao usuario", error);
+        res.status(500).send({ error: "Ocorreu um erro, tente novamente" });
+      });
+  } else {
+    res.status(400).send({ error: "Nenhuma imagem enviada" });
+  }
+});
 
 router.post("/login", (req, res) => {
     const {email, password } = req.body;
@@ -169,16 +187,15 @@ router.get("/user/:userId/profile-image", (req, res) => {
   
     User.findById(userId)
       .then(user => {
-        if (!user || !user.featuredImage) {
+        if (!user || !user.profileImage) {
           return res.status(404).send({ error: "User or image not found" });
         }
   
-        res.sendFile(user.featuredImage);
+        res.send(user.profileImage+path);
       })
       .catch(error => {
         console.error("Error retrieving user image", error);
         res.status(500).send({ error: "Failed to retrieve user image" });
       });
-  }); 
-
+  });
 export default router;
