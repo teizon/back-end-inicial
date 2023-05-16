@@ -7,28 +7,33 @@ import Multer  from '@/app/middlewares/Multer';
 const router = new Router();
 
 router.get("/get", (req, res) => {  // get para todos projetos
-  ProjectSchema.find()          // sem parametros
-    .then(data => {
-      const projects = data.map(project => {
-        return {
-          title: project.title,
-          category: project.category,
-          slug: project.slug,
-          featuredImage: project.featuredImage
-        }
-      });
-      res.send(projects)
-    })
-    .catch(error => {
-      console.error("erro ao salvar novo projeto no banco de dados", error);
-        res
-          .status(400)
-          .send({
-            error: 
-                "Nao foi possivel obter os dados do projeto. Tente novamente",
-          });
-  });
-
+  //console.log(req.User.name);
+  //if (req.user.isAdmin === true){
+    ProjectSchema.find()          // sem parametros
+      .then(data => {
+        const projects = data.map(project => {
+          return {
+            title: project.title,
+            category: project.category,
+            slug: project.slug,
+            featuredImage: project.featuredImage
+            
+          }
+        });
+        res.send(projects)
+      })
+      .catch(error => {
+        console.error("erro ao salvar novo projeto no banco de dados", error);
+          res
+            .status(400)
+            .send({
+              error: 
+                  "Nao foi possivel obter os dados do projeto. Tente novamente",
+            });
+    });
+  /*}else{
+    res.status(201).send({ message: 'not admin!' });
+  }*/
 });
 
 router.get('/get/:projectSlug', (req, res) => { // get para projeto especifico
@@ -47,7 +52,7 @@ router.get('/get/:projectSlug', (req, res) => { // get para projeto especifico
   });
 });
 
-router.post("/post", AuthMiddleware, (req, res) => {
+router.post("/post",AuthMiddleware({isAdmin: true}), (req, res) => {
   const {title, slug, description, category} = req.body;
   console
   ProjectSchema.create({title, description, category})
@@ -65,7 +70,7 @@ router.post("/post", AuthMiddleware, (req, res) => {
       });
 });
 
-router.put("/put/:projectId", AuthMiddleware, (req, res) => {
+router.put("/put/:projectId", AuthMiddleware({isAdmin: true}), (req, res) => {
   const {title, description, category} = req.body;
   let slug = undefined;
   if(title){
@@ -87,11 +92,11 @@ router.put("/put/:projectId", AuthMiddleware, (req, res) => {
       });
 });
 
-router.delete("/delete/:projectId", AuthMiddleware, (req, res) => {
+router.delete("/delete/:projectId", AuthMiddleware({isAdmin: true}), (req, res) => {
   ProjectSchema.findByIdAndRemove(req.params.projectId) 
   .then
     (() => {
-      res.status(201).send({ message: 'Hello world!' });
+      res.status(201).send({ message: 'deleted!' });
   }).catch(error => {
     console.error("erro ao remover o projeto do banco de dados", error);
     req.status(400).send({message: "erro ao remover projeto, tente novamente"})
@@ -100,7 +105,7 @@ router.delete("/delete/:projectId", AuthMiddleware, (req, res) => {
 
 router.post(
   "/featured-image/:projectId",
-  [AuthMiddleware, Multer.single("featured-image")],
+  [ AuthMiddleware({isAdmin: true}), Multer.single("featured-image")],
   (req, res) => {
     const { file } = req;
     if (file) {
@@ -127,8 +132,8 @@ router.post(
 );
 
 router.post(
-  "/featured-images/:projectId",
-  [AuthMiddleware, Multer.array("featured-images")],
+  "featured-images/:projectId",
+  [AuthMiddleware({isAdmin: true}), Multer.array("featured-images")],
   (req, res) => {
     const { files } = req;
     if (files && files.length > 0) {

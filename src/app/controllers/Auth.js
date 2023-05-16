@@ -18,10 +18,12 @@ const generateToken = params => {
     );     
 }
 
+
+
 router.post("/register",
-    [AuthMiddleware, Multer.single("profile-image")],
+    [Multer.single("profile-image")],
     (req, res) => {
-        const { name, email, password } = req.body;
+        const { name, email, password, isAdmin } = req.body;
         let featuredImage = '';
 
         if (req.file) {
@@ -33,7 +35,7 @@ router.post("/register",
                 if (userData) {
                     return res.status(400).send({ error: "User already exists" });
                 } else {
-                    const newUser = new User({ name, email, password, featuredImage });
+                    const newUser = new User({ name, email, password, featuredImage, isAdmin});
 
                     newUser.save()
                         .then(user => {
@@ -51,7 +53,6 @@ router.post("/register",
                 res.status(500).send({ error: "Registration failed" });
             });
     });
-
 
 router.post("/login", (req, res) => {
     const {email, password } = req.body;

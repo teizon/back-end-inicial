@@ -1,39 +1,47 @@
 import mongoose from "@/database";
 import bcrypt from "bcryptjs";
 
-const UserSchema = new mongoose.Schema({  
-    name: { 
-        type: String,
-        required: true,
+const UserSchema = new mongoose.Schema({
+    name: {
+      type: String,
+      required: true,
     },
-    email: { 
-        type: String,
-        required: true,
-        unique: true,
-        lowercase: true,
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
     },
-    password: { 
-        type: String,
-        required: true,
-        select: false,
+    password: {
+      type: String,
+      required: true,
+      select: false,
     },
-    profileImage: { 
-        type: String,
-        required: false,
+    profileImage: {
+      type: String,
+      required: false,
     },
-    passwordResetToken: { 
-        type: String,
-        select: false,
+    passwordResetToken: {
+      type: String,
+      select: false,
     },
-    passwordResetTokenExpiration: { 
-        type: Date,
-        select: false,
+    passwordResetTokenExpiration: {
+      type: Date,
+      select: false,
     },
-    createdAt: { 
-        type: Date,
-        default: Date.now,
+    createdAt: {
+      type: Date,
+      default: Date.now,
     },
-});
+    isAdmin: {
+      type: Boolean,
+      //enum: ['admin', 'user'], // Defina os tipos de usuário permitidos
+      required: false,
+      //default: 'user', // Defina o valor padrão do tipo de usuário como 'user'
+      default: false,
+    },
+  });
+  
 
 UserSchema.pre("save", function(next) {
     bcrypt.hash(this.password, 10).then(hash => {
