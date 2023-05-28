@@ -49,24 +49,24 @@ router.post("/register",
             });
     });
 
-    router.post("/put/addImage/:userId", Multer.single('profileImage'), (req, res, next) => {
-        const { file } = req;
-        if (file) {
-            User.findByIdAndUpdate(
-            req.params.userId,
-            { profileImage: file.path },
-            { new: true }
-      ).then(user => {
-        if (!user) {
-          throw new Error("usuario não encontrado");
-        }else{
-          return res.send({ user });
-        }
-      })
-      .catch(error => {
-        console.error("Erro ao associar a imagem ao usuario", error);
-        res.status(500).send({ error: "Ocorreu um erro, tente novamente" });
-      });
+router.post("/put/addImage/:userId", Multer.single('profileImage'), (req, res, next) => {
+  const { file } = req;
+    if (file) {
+      User.findByIdAndUpdate(
+        req.params.userId,
+        { profileImage: file.path },
+        { new: true }
+    ).then(user => {
+      if (!user) {
+        throw new Error("usuario não encontrado");
+      }else{
+        return res.send({ user });
+      }
+    })
+    .catch(error => {
+      console.error("Erro ao associar a imagem ao usuario", error);
+      res.status(500).send({ error: "Ocorreu um erro, tente novamente" });
+    });
   } else {
     res.status(400).send({ error: "Nenhuma imagem enviada" });
   }

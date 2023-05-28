@@ -7,8 +7,6 @@ import Multer  from '@/app/middlewares/Multer';
 const router = new Router();
 
 router.get("/get", (req, res) => {  // get para todos projetos
-  //console.log(req.User.name);
-  //if (req.user.isAdmin === true){
     ProjectSchema.find()          // sem parametros
       .then(data => {
         const projects = data.map(project => {
@@ -17,7 +15,6 @@ router.get("/get", (req, res) => {  // get para todos projetos
             category: project.category,
             slug: project.slug,
             featuredImage: project.featuredImage
-            
           }
         });
         res.send(projects)
@@ -29,11 +26,8 @@ router.get("/get", (req, res) => {  // get para todos projetos
             .send({
               error: 
                   "Nao foi possivel obter os dados do projeto. Tente novamente",
-            });
+      });
     });
-  /*}else{
-    res.status(201).send({ message: 'not admin!' });
-  }*/
 });
 
 router.get('/get/:projectSlug', (req, res) => { // get para projeto especifico
@@ -104,7 +98,7 @@ router.delete("/delete/:projectId", AuthMiddleware({isAdmin: true}), (req, res) 
 });
 
 router.post(
-  "/featured-image/:projectId",
+  "/post/featured-image/:projectId",
   [ AuthMiddleware({isAdmin: true}), Multer.single("featured-image")],
   (req, res) => {
     const { file } = req;
@@ -132,7 +126,7 @@ router.post(
 );
 
 router.post(
-  "featured-images/:projectId",
+  "post/featured-images/:projectId",
   [AuthMiddleware({isAdmin: true}), Multer.array("featured-images")],
   (req, res) => {
     const { files } = req;

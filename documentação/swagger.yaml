@@ -1,27 +1,20 @@
 swagger: '2.0'
 info:
-  description: "Documentação da API do projeto. Para editar esse arquivo é recomendado utilizar a extensão do VSCode 'Swagger Viewer'"
+  description: "Documentação da API do projeto de capacitação back-end, feito por Tiago Viegas Pires Lage."
   version: '1.0.0'
-  title: 'Projeto'
-host: 'https://exemplo.compjunior.com.br/'
-basePath: '/api'
-tags:
-  - name: 'exemplo'
-    description: 'Operações relacionadas ao exemplo'
-  - name: 'usuario'
-    description: 'Operações relacionadas aos usuários'
+  title: 'Capacitação Back-end'
+host: 'localhost:3000'
+basePath: '/'
 schemes:
   - 'https'
 paths:
-  /exemplo:
+  /exemploComp:
     get:
       tags:
-        - 'exemplo'
+        - 'exemploComp'
       summary: 'RESUMO EXEMPLO GET'
       description: 'DESCRIÇÃO EXEMPLO GET'
       operationId: 'login'
-      consumes:
-        - 'application/json'
       produces:
         - 'application/json'
       responses:
@@ -44,7 +37,7 @@ paths:
           description: 'Internal server error'
     post:
       tags:
-        - 'exemplo'
+        - 'exemploComp'
       summary: 'RESUMO EXEMPLO POST'
       description: 'DESCRIÇÃO EXEMPLO POST'
       operationId: 'signUp'
@@ -73,36 +66,11 @@ paths:
           description: 'Bad request'
         '500':
           description: 'Internal server error'
-
-  /usuario:
-    get:
-      tags:
-        - 'usuario'
-      summary: 'Obtém todos os usuários do sistema'
-      description: ''
-      consumes:
-        - 'application/json'
-      produces:
-        - 'application/json'
-      responses:
-        '200':
-          description: 'OK'
-          schema:
-            type: 'array'
-            items:
-              $ref: '#/definitions/User'
-        '401':
-          description: 'No valid token provided / User not allowed to access this resource'
-        '500':
-          description: 'Internal server error'
-      security:
-        - petstore_auth:
-            - 'write:palestrantes'
-  /usuario/inscrever:
+  /auth/register:
     post:
       tags:
-        - 'usuario'
-      summary: 'Inscreve o usuário em uma palestra'
+        - 'auth'
+      summary: 'registra usuário'
       description: ''
       consumes:
         - 'application/json'
@@ -111,211 +79,510 @@ paths:
       parameters:
         - in: 'body'
           name: 'body'
-          description: 'Dados da palestra e do usuário'
+          description: 'Dados de cadastro do usuário'
           required: true
           schema:
             type: 'object'
             properties:
-              idPalestra:
+              name:
                 type: 'string'
-              idUsuario:
+                example: 'tiago'
+              email:
                 type: 'string'
-                example: 'Opcional se mandar o token na requisição'
+                example: 'tiago@gmail.com'
+              password:
+                type: 'string'
+                example: '1234'
+              isAdmin:
+                type: 'boolean'
+                example: true
       responses:
         '200':
           description: 'OK'
         '400':
-          description: 'Usuário já isncrito na palestra'
-        '401':
-          description: 'No valid token provided / User not allowed to access this resource'
+          description: 'User already exists or registration failed'
         '500':
-          description: 'Internal server error'
-      security:
-        - petstore_auth:
-            - 'write:palestrantes'
-  /usuario/inscricao:
+          description: 'Registration failed'
+  /auth/login:
+    post:
+      tags:
+        - 'auth'
+      summary: 'faz o login do usuário'
+      description: 'login do usuário'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'Dados de login do usuário'
+          required: true
+          schema:
+            type: 'object'
+            properties:
+              email:
+                type: 'string'
+                example: 'tiago@gmail.com'
+              password:
+                type: 'string'
+                example: '1234'
+      responses:
+        '200':
+          description: 'OK'
+        '400':
+          description: 'Invalid credentials'
+        '500':
+          description: 'Login failed'
+  /put/addImage/{userId}:
+    post:
+      tags:
+        - 'auth'
+      summary: 'Adiciona imagem de perfil'
+      description: 'Adiciona uma imagem de perfil para um usuário específico'
+      consumes:
+        - 'multipart/form-data'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'path'
+          name: 'userId'
+          description: 'ID do usuário'
+          required: true
+          type: 'string'
+        - in: 'formData'
+          name: 'profileImage'
+          description: 'Imagem de perfil do usuário'
+          required: true
+          type: 'file'
+      responses:
+        '200':
+          description: 'OK'
+          schema:
+            $ref: '#/definitions/User'
+        '400':
+          description: 'Nenhuma imagem enviada ou parâmetros inválidos'
+        '404':
+          description: 'Usuário não encontrado'
+        '500':
+          description: 'Erro ao associar a imagem ao usuário'
+  /forgot-password:
+    post:
+      tags:
+        - 'auth'
+      summary: 'Esqueceu a senha'
+      description: 'Envia um e-mail com instruções para redefinir a senha do usuário'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'Dados necessários para redefinir a senha'
+          required: true
+          schema:
+            type: 'object'
+            properties:
+              email:
+                type: 'string'
+      responses:
+        '200':
+          description: 'E-mail enviado com sucesso'
+        '400':
+          description: 'Falha ao enviar e-mail de recuperação de senha'
+        '404':
+          description: 'Usuário não encontrado'
+        '500':
+          description: 'Erro interno do servidor'
+  /reset-password:
+    post:
+      tags:
+        - 'auth'
+      summary: 'Redefinir senha'
+      description: 'Redefine a senha do usuário com base no token de redefinição'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'Dados necessários para redefinir a senha'
+          required: true
+          schema:
+            type: 'object'
+            properties:
+              email:
+                type: 'string'
+              token:
+                type: 'string'
+              newPassword:
+                type: 'string'
+      responses:
+        '200':
+          description: 'Senha redefinida com sucesso'
+        '400':
+          description: 'Token inválido'
+        '404':
+          description: 'Usuário não encontrado'
+        '500':
+          description: 'Erro interno do servidor'
+  /user/{userId}/profile-image:
+    get:
+      tags:
+        - 'auth'
+      summary: 'Obter imagem de perfil do usuário'
+      description: 'Retorna a imagem de perfil do usuário com base no ID do usuário'
+      produces:
+        - 'profile-image/*'
+      parameters:
+        - in: 'path'
+          name: 'userId'
+          description: 'ID do usuário'
+          required: true
+          schema:
+            type: 'string'
+      responses:
+        '200':
+          description: 'Imagem de perfil encontrada'
+        '404':
+          description: 'Usuário ou imagem não encontrado'
+        '500':
+          description: 'Erro interno do servidor'
+
+  /exemplo/get:
+    get:
+      tags:
+        - 'exemplo'
+      summary: 'Obter todos os projetos'
+      description: 'Retorna todos os projetos'
+      responses:
+        '200':
+          description: 'Projetos obtidos com sucesso'
+          content:
+            json:
+              schema:
+                type: 'array'
+                items:
+                  type: 'object'
+                  properties:
+                    title:
+                      type: 'string'
+                    category:
+                      type: 'string'
+                    slug:
+                      type: 'string'
+                    featuredImage:
+                      type: 'string'
+        '400':
+          description: 'Falha ao obter os dados do projeto'
+        '500':
+          description: 'Erro interno do servidor'
+  /exemplo/get/{projectSlug}:
+    get:
+      tags:
+        - 'exemplo'
+      summary: 'Obter projeto específico'
+      description: 'Retorna os dados de um projeto com base no slug'
+      parameters:
+        - in: 'path'
+          name: 'projectSlug'
+          description: 'Slug do projeto'
+          required: true
+          schema:
+            type: 'string'
+      responses:
+        '200':
+          description: 'Projeto encontrado com sucesso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectSchema'
+        '400':
+          description: 'Falha ao obter os dados do projeto'
+        '500':
+          description: 'Erro interno do servidor'
+
+  /exemplo/post:
+   post:
+    tags:
+      - 'exemplo'
+    summary: 'post de dados'
+    description: 'post de dados'
+    operationId: 'signUp'
+    consumes:
+      - 'application/json'
+    produces:
+      - 'application/json'
+    parameters:
+      - in: 'body'
+        name: 'body'
+        description: 'Dados para o post'
+        required: true
+        schema:
+              type: 'object'
+              properties:
+                title:
+                  type: 'string'
+                  example: 'exemplo'
+                description:
+                  type: 'string'
+                  example: 'exemplo2'
+                category:
+                  type: 'string'
+                  example: 'exemplo2'
+    responses:
+       '200':
+         description: 'Deu tudo certo'
+       '400':
+         description: 'Bad request'
+       '500':
+         description: 'Internal server error'
+  /exemplo/put/{projectId}:
+    put:
+      tags:
+        - 'exemplo'
+      summary: Atualizar um projeto
+      description: Atualiza as informações de um projeto no banco de dados.
+      parameters:
+        - in: path
+          name: projectId
+          description: ID do projeto a ser atualizado
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Authorization
+          description: Token de autenticação do administrador
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                category:
+                  type: string
+      responses:
+        '201':
+          description: Projeto atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectSchema'
+        '400':
+          description: Erro ao atualizar o projeto
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /delete/{projectId}:
     delete:
       tags:
-        - 'usuario'
-      summary: 'Deleta inscrição do usuário'
-      description: ''
-      consumes:
-        - 'application/json'
-      produces:
-        - 'application/json'
+        - 'exemplo'
+      summary: Excluir um projeto
+      description: Remove um projeto do banco de dados.
       parameters:
-        - in: 'body'
-          name: 'body'
-          description: 'Dados da palestra e do usuário'
+        - in: path
+          name: projectId
+          description: ID do projeto a ser excluído
           required: true
           schema:
-            type: 'object'
-            properties:
-              idInscricao:
-                type: 'string'
+            type: string
+        - in: header
+          name: Authorization
+          description: Token de autenticação do administrador
+          required: true
+          schema:
+            type: string
       responses:
-        '200':
-          description: 'OK'
+        '201':
+          description: Projeto excluído com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: deleted!
         '400':
-          description: 'Id da inscrição não fornecido'
-        '403':
-          description: 'No valid token provided / User not allowed to access this resource'
-        '500':
-          description: 'Internal server error'
-      security:
-        - petstore_auth:
-            - 'write:palestrantes'
-  /usuario/palestras-inscritas:
-    get:
-      tags:
-        - 'usuario'
-      summary: 'Obtém as palestras nas quais o usuário se inscreveu'
-      description: ''
-      consumes:
-        - 'application/json'
-      produces:
-        - 'application/json'
-      parameters:
-        - in: 'body'
-          name: 'body'
-          description: 'Dados da palestra e do usuário'
-          required: true
-          schema:
-            type: 'object'
-            properties:
-              idUsuario:
-                type: 'string'
-                example: 'Opcional se mandar o token na requisição'
-              dia:
-                type: 'string'
-                example: '19'
-      responses:
-        '200':
-          description: 'OK'
-          schema:
-            type: 'object'
-            properties:
-              palestra:
-                type: 'string'
-                example: 'Dados da palestra'
-              streamingTime:
-                type: 'string'
-                example: 'Tempo que o usuário assistiu a palestra'
-              gerarCertificado:
-                type: 'string'
-                example: 'Se o usuário pode ou não gerar certificado'
-        '401':
-          description: 'No valid token provided / User not allowed to access this resource'
-        '500':
-          description: 'Internal server error'
-      security:
-        - petstore_auth:
-            - 'write:palestrantes'
-  /usuario/streaming:
+          description: Erro ao excluir o projeto
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: erro ao remover projeto, tente novamente
+  /post/featured-image/{projectId}:
     post:
       tags:
-        - 'usuario'
-      summary: 'Registra o tempo que o usuário ficou na palestra'
-      description: ''
-      consumes:
-        - 'application/json'
-      produces:
-        - 'application/json'
+        - 'exemplo'
+      summary: Associar imagem destacada a um projeto
+      description: Associa uma imagem destacada a um projeto específico.
       parameters:
-        - in: 'body'
-          name: 'body'
-          description: 'Dados da palestra e do usuário'
+        - in: path
+          name: projectId
+          description: ID do projeto ao qual a imagem será associada
           required: true
           schema:
-            type: 'object'
-            properties:
-              idPalestra:
-                type: 'string'
-              time:
-                type: 'string'
-                example: 'Tempo em segundos que o usuário assistiu a palestra (função será chamada de x em x segundos, aí manda esse x)'
+            type: string
+        - in: header
+          name: Authorization
+          description: Token de autenticação do administrador
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                featured-image:
+                  type: string
+                  format: binary
       responses:
         '200':
-          description: 'OK'
+          description: Imagem associada ao projeto com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project:
+                    $ref: '#/components/schemas/ProjectSchema'
         '400':
-          description: 'Time ou idPalestra não enviados/Tempo de registro muito curto/ Horário fora de exibição'
-        '401':
-          description: 'No valid token provided / User not allowed to access this resource'
-        '404':
-          description: 'Inscrição não encontrada'
+          description: Nenhuma imagem enviada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Nenhuma imagem enviada
         '500':
-          description: 'Internal server error'
-      security:
-        - petstore_auth:
-            - 'write:palestrantes'
-  /usuario/gerar-certificado:
-    get:
+          description: Erro ao associar a imagem ao projeto
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Ocorreu um erro, tente novamente
+  /post/featured-images/{projectId}:
+    post:
       tags:
-        - 'usuario'
-      summary: 'Gera um certificado com o tempo que o usuario ficou em uma palestra'
-      description: ''
-      consumes:
-        - 'application/json'
-      produces:
-        - 'application/json'
+        - 'exemplo'    
+      summary: Associar várias imagens destacadas a um projeto
+      description: Associa várias imagens destacadas a um projeto específico.
       parameters:
-        - in: 'query'
-          name: 'token'
-          type: 'string'
-          description: 'Token do usuário'
+        - in: path
+          name: projectId
+          description: ID do projeto ao qual as imagens serão associadas
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Authorization
+          description: Token de autenticação do administrador
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                featured-images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
       responses:
         '200':
-          description: 'OK'
-        '401':
-          description: 'Tempo mínimo de visualização não atingido'
-        '404':
-          description: 'Inscrição não encontrada'
+          description: Imagens associadas ao projeto com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project:
+                    $ref: '#/components/schemas/ProjectSchema'
+        '400':
+          description: Nenhuma imagem enviada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Nenhuma imagem enviada
         '500':
-          description: 'Internal server error'
-      security:
-        - petstore_auth:
-            - 'write:palestrantes'
+          description: Erro ao associar as imagens ao projeto
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Ocorreu um erro, tente novamente
+components:
+  schemas:
+    ProjectRequestBody:
+      type: 'object'
+      properties:
+        title:
+          type: 'string'
+        slug:
+          type: 'string'
+        description:
+          type: 'string'
+        category:
+          type: 'string'
+    ProjectSchema:
+      type: 'object'
+      properties:
+        title:
+          type: 'string'
+        description:
+          type: 'string'
+        category:
+          type: 'string'
 
-securityDefinitions:
-  petstore_auth:
-    type: 'oauth2'
-    authorizationUrl: 'http://petstore.swagger.io/oauth/dialog'
-    flow: 'implicit'
-    scopes:
-      write:palestrantes: 'modify pets in your account'
-  api_key:
-    type: 'apiKey'
-    name: 'api_key'
-    in: 'header'
 definitions:
   User:
     type: 'object'
     properties:
       id:
         type: 'string'
+        example: '1'
       name:
         type: 'string'
+        example: 'tiago'
       email:
         type: 'string'
-      cpf:
-        type: 'string'
-      studentCode:
-        type: 'string'
-      course:
-        type: 'string'
-      password:
-        type: 'string'
-  Palestrante:
-    type: 'object'
-    properties:
-      id:
-        type: 'string'
-      name:
-        type: 'string'
-      institution:
-        type: 'string'
-      photo:
-        type: 'string'
-externalDocs:
-  description: 'Find out more about Swagger'
-  url: 'http://swagger.io'
+        example: 'tiago@gmail.com'
+      isAdmin:
+        type: 'boolean'
+        example: true
