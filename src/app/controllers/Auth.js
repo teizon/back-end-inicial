@@ -49,7 +49,7 @@ router.post("/register",
             });
     });
 
-router.post("/put/addImage/:userId", Multer.single('profileImage'), (req, res, next) => {
+router.post("/post/addImage/:userId", Multer.single('profileImage'), (req, res, next) => {
   const { file } = req;
     if (file) {
       User.findByIdAndUpdate(

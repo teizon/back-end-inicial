@@ -8,64 +8,7 @@ basePath: '/'
 schemes:
   - 'https'
 paths:
-  /exemploComp:
-    get:
-      tags:
-        - 'exemploComp'
-      summary: 'RESUMO EXEMPLO GET'
-      description: 'DESCRIÇÃO EXEMPLO GET'
-      operationId: 'login'
-      produces:
-        - 'application/json'
-      responses:
-        '200':
-          description: 'Deu tudo certo'
-          schema:
-            type: 'array'
-            items:
-              type: 'object'
-              properties:
-                dado:
-                  type: 'string'
-                  example: 'exemplo'
-                dado2:
-                  type: 'string'
-                  example: 'exemplo2'
-        '400':
-          description: 'Bad request'
-        '500':
-          description: 'Internal server error'
-    post:
-      tags:
-        - 'exemploComp'
-      summary: 'RESUMO EXEMPLO POST'
-      description: 'DESCRIÇÃO EXEMPLO POST'
-      operationId: 'signUp'
-      consumes:
-        - 'application/json'
-      produces:
-        - 'application/json'
-      parameters:
-        - in: 'body'
-          name: 'body'
-          description: 'Dados de cadastro do usuário'
-          required: true
-          schema:
-            type: 'object'
-            properties:
-              dado:
-                type: 'string'
-                example: 'exemplo'
-              dado2:
-                type: 'string'
-                example: 'exemplo2'
-      responses:
-        '200':
-          description: 'Deu tudo certo'
-        '400':
-          description: 'Bad request'
-        '500':
-          description: 'Internal server error'
+  #auth - relacionado ao usuario em sí, seja ele admin ou não
   /auth/register:
     post:
       tags:
@@ -97,10 +40,8 @@ paths:
                 type: 'boolean'
                 example: true
       responses:
-        '200':
-          description: 'OK'
         '400':
-          description: 'User already exists or registration failed'
+          description: 'User already exists or Registration failed'
         '500':
           description: 'Registration failed'
   /auth/login:
@@ -128,13 +69,13 @@ paths:
                 type: 'string'
                 example: '1234'
       responses:
-        '200':
-          description: 'OK'
         '400':
-          description: 'Invalid credentials'
+          description: 'invalid password'
+        '404':
+          description: 'user not found'
         '500':
-          description: 'Login failed'
-  /put/addImage/{userId}:
+          description: 'internal server error'
+  /post/addImage/{userId}:
     post:
       tags:
         - 'auth'
@@ -156,16 +97,12 @@ paths:
           required: true
           type: 'file'
       responses:
-        '200':
-          description: 'OK'
-          schema:
-            $ref: '#/definitions/User'
         '400':
-          description: 'Nenhuma imagem enviada ou parâmetros inválidos'
+          description: 'Nenhuma imagem enviada'
         '404':
           description: 'Usuário não encontrado'
         '500':
-          description: 'Erro ao associar a imagem ao usuário'
+          description: 'Ocorreu um erro, tente novamente'
   /forgot-password:
     post:
       tags:
@@ -186,15 +123,14 @@ paths:
             properties:
               email:
                 type: 'string'
+                example: "tiago@gmail.com"
       responses:
-        '200':
-          description: 'E-mail enviado com sucesso'
         '400':
-          description: 'Falha ao enviar e-mail de recuperação de senha'
+          description: 'fail sending recover password mail'
         '404':
-          description: 'Usuário não encontrado'
+          description: 'user not found'
         '500':
-          description: 'Erro interno do servidor'
+          description: 'internal server error'
   /reset-password:
     post:
       tags:
@@ -215,19 +151,20 @@ paths:
             properties:
               email:
                 type: 'string'
+                example: "tiago@gmail.com"
               token:
                 type: 'string'
+                example: "0a7b02a0b024ad1ea0bfbf4599004840d0dd97ff"
               newPassword:
                 type: 'string'
+                example: "1111"
       responses:
-        '200':
-          description: 'Senha redefinida com sucesso'
         '400':
-          description: 'Token inválido'
+          description: 'Invalid token'
         '404':
-          description: 'Usuário não encontrado'
+          description: 'User not found'
         '500':
-          description: 'Erro interno do servidor'
+          description: 'Internal server error'
   /user/{userId}/profile-image:
     get:
       tags:
@@ -237,48 +174,49 @@ paths:
       produces:
         - 'profile-image/*'
       parameters:
-        - in: 'path'
+        - in: 'body'
           name: 'userId'
           description: 'ID do usuário'
           required: true
           schema:
             type: 'string'
+            example: "6473b988a7ce3c0e24913d67"
       responses:
-        '200':
-          description: 'Imagem de perfil encontrada'
         '404':
-          description: 'Usuário ou imagem não encontrado'
+          description: 'User or image not found'
         '500':
-          description: 'Erro interno do servidor'
-
+          description: 'Failed to retrieve user image'
+  # exemplo - relacionado aos dados que o usúario pode adicionar e alterar,
+  # dependendo de seu tipo, se ele é admin ou nao
   /exemplo/get:
     get:
       tags:
         - 'exemplo'
       summary: 'Obter todos os projetos'
-      description: 'Retorna todos os projetos'
+      description: 'Obter todos os projetos'
+      operationId: 'getAllProjects'
+      produces:
+        - 'application/json'
       responses:
         '200':
           description: 'Projetos obtidos com sucesso'
-          content:
-            json:
-              schema:
-                type: 'array'
-                items:
-                  type: 'object'
-                  properties:
-                    title:
-                      type: 'string'
-                    category:
-                      type: 'string'
-                    slug:
-                      type: 'string'
-                    featuredImage:
-                      type: 'string'
+          schema:
+            type: 'array'
+            items:
+              type: 'object'
+              properties:
+                title:
+                  type: 'string'
+                category:
+                  type: 'string'
+                slug:
+                  type: 'string'
+                featuredImage:
+                  type: 'string'
         '400':
-          description: 'Falha ao obter os dados do projeto'
-        '500':
-          description: 'Erro interno do servidor'
+          description: 'Não foi possível obter os dados do projeto. Tente novamente'
+
+
   /exemplo/get/{projectSlug}:
     get:
       tags:
@@ -286,23 +224,16 @@ paths:
       summary: 'Obter projeto específico'
       description: 'Retorna os dados de um projeto com base no slug'
       parameters:
-        - in: 'path'
+        - in: 'body'
           name: 'projectSlug'
           description: 'Slug do projeto'
           required: true
           schema:
-            type: 'string'
+            type: "string"
+            example: "teste"
       responses:
-        '200':
-          description: 'Projeto encontrado com sucesso'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectSchema'
         '400':
-          description: 'Falha ao obter os dados do projeto'
-        '500':
-          description: 'Erro interno do servidor'
+          description: 'Nao foi possivel obter os dados do projeto. Tente novamente'
 
   /exemplo/post:
    post:
@@ -328,17 +259,20 @@ paths:
                   example: 'exemplo'
                 description:
                   type: 'string'
-                  example: 'exemplo2'
+                  example: 'exemplo'
                 category:
                   type: 'string'
-                  example: 'exemplo2'
+                  example: 'exemplo'
+      - in: body
+        name: Authorization
+        description: Token de autenticação do administrador
+        required: true
+        schema:
+            type: string
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDczYjljZmE3Y2UzYzBlMjQ5MTNkNmEiLCJpYXQiOjE2ODUzMTE5MjIsImV4cCI6MTY4NTM5ODMyMn0.AB9I9_EG1Yje4MdHWvZvmim5uV1fe5dFJSBEExA8J-A"
     responses:
-       '200':
-         description: 'Deu tudo certo'
        '400':
-         description: 'Bad request'
-       '500':
-         description: 'Internal server error'
+         description: 'Nao foi possivel salvar seu projeto. Verifique os dados e tente novamente'
   /exemplo/put/{projectId}:
     put:
       tags:
@@ -346,47 +280,57 @@ paths:
       summary: Atualizar um projeto
       description: Atualiza as informações de um projeto no banco de dados.
       parameters:
-        - in: path
+        - in: body
           name: projectId
           description: ID do projeto a ser atualizado
           required: true
           schema:
             type: string
-        - in: header
+            example: "6473d2246ff912156c10a096"
+        - in: body
           name: Authorization
           description: Token de autenticação do administrador
           required: true
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDczYjljZmE3Y2UzYzBlMjQ5MTNkNmEiLCJpYXQiOjE2ODUzMTE5MjIsImV4cCI6MTY4NTM5ODMyMn0.AB9I9_EG1Yje4MdHWvZvmim5uV1fe5dFJSBEExA8J-A"
+        - in: body
+          name: body
+          description: Objeto contendo as informações atualizadas do projeto
+          required: true
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                example: "teste"
+              description:
+                type: string
+                example: "teste"
+              category:
+                type: string
+                example: "teste"
+      responses:
+        '201': 
+          description: 'Projeto atualizado com sucesso'
+          schema:
+            type: 'array'
+            items:
+              type: 'object'
               properties:
                 title:
-                  type: string
-                description:
-                  type: string
+                  type: 'string'
+                  example: 'teste'
                 category:
-                  type: string
-      responses:
-        '201':
-          description: Projeto atualizado com sucesso
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectSchema'
+                  type: 'string'
+                  example: "teste"
+                slug:
+                  type: 'string'
+                  example: "teste"
         '400':
           description: Erro ao atualizar o projeto
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
+
+
   /delete/{projectId}:
     delete:
       tags:
@@ -394,39 +338,25 @@ paths:
       summary: Excluir um projeto
       description: Remove um projeto do banco de dados.
       parameters:
-        - in: path
+        - in: body
           name: projectId
           description: ID do projeto a ser excluído
           required: true
           schema:
             type: string
-        - in: header
+            example: "6473d2246ff912156c10a096"
+        - in: body
           name: Authorization
           description: Token de autenticação do administrador
           required: true
           schema:
             type: string
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDczYjljZmE3Y2UzYzBlMjQ5MTNkNmEiLCJpYXQiOjE2ODUzMTE5MjIsImV4cCI6MTY4NTM5ODMyMn0.AB9I9_EG1Yje4MdHWvZvmim5uV1fe5dFJSBEExA8J-A"
       responses:
         '201':
-          description: Projeto excluído com sucesso
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: deleted!
+          description: 'deleted!'
         '400':
-          description: Erro ao excluir o projeto
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: erro ao remover projeto, tente novamente
+          description: "erro ao remover projeto, tente novamente"
   /post/featured-image/{projectId}:
     post:
       tags:
@@ -434,155 +364,143 @@ paths:
       summary: Associar imagem destacada a um projeto
       description: Associa uma imagem destacada a um projeto específico.
       parameters:
-        - in: path
+        - in: body
           name: projectId
           description: ID do projeto ao qual a imagem será associada
           required: true
           schema:
             type: string
-        - in: header
+            example: "6473d2246ff912156c10a096"
+        - in: body
           name: Authorization
           description: Token de autenticação do administrador
           required: true
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                featured-image:
-                  type: string
-                  format: binary
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDczYjljZmE3Y2UzYzBlMjQ5MTNkNmEiLCJpYXQiOjE2ODUzMTE5MjIsImV4cCI6MTY4NTM5ODMyMn0.AB9I9_EG1Yje4MdHWvZvmim5uV1fe5dFJSBEExA8J-A"
+        - in: formData
+          name: featured-image
+          description: Imagem destacada a ser associada
+          required: true
+          type: file
       responses:
-        '200':
-          description: Imagem associada ao projeto com sucesso
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  project:
-                    $ref: '#/components/schemas/ProjectSchema'
         '400':
-          description: Nenhuma imagem enviada
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Nenhuma imagem enviada
+          description: "Nenhuma imagem enviada"
         '500':
-          description: Erro ao associar a imagem ao projeto
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Ocorreu um erro, tente novamente
+          description: "Ocorreu um erro, tente novamente"
+
+
   /post/featured-images/{projectId}:
     post:
       tags:
-        - 'exemplo'    
-      summary: Associar várias imagens destacadas a um projeto
-      description: Associa várias imagens destacadas a um projeto específico.
+        - 'exemplo'
+      summary: Associar imagem(s) destacada(s) a um projeto
+      description: Associa uma ou mais imagens destacadas a um projeto específico.
       parameters:
-        - in: path
+        - in: body
           name: projectId
           description: ID do projeto ao qual as imagens serão associadas
           required: true
           schema:
             type: string
-        - in: header
+            example: "6473d2246ff912156c10a096"
+        - in: body
           name: Authorization
           description: Token de autenticação do administrador
           required: true
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                featured-images:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDczYjljZmE3Y2UzYzBlMjQ5MTNkNmEiLCJpYXQiOjE2ODUzMTE5MjIsImV4cCI6MTY4NTM5ODMyMn0.AB9I9_EG1Yje4MdHWvZvmim5uV1fe5dFJSBEExA8J-A"
+        - in: formData
+          name: featured-images
+          description: Arquivos de imagem a serem associados
+          required: true
+          type: array
+          items:
+            type: string
+            format: binary
+
+        #requestBody:
+        #  required: true
+        #  content:
+        #    multipart/form-data:
+        #      schema:
+         #       type: object
+         #       properties:
+         #         images:
+         #           type: array
+         #           items:
+          #            type: string
+        #             format: binary*/
       responses:
-        '200':
-          description: Imagens associadas ao projeto com sucesso
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  project:
-                    $ref: '#/components/schemas/ProjectSchema'
         '400':
-          description: Nenhuma imagem enviada
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Nenhuma imagem enviada
+          description: "Nenhuma imagem enviada"
         '500':
-          description: Erro ao associar as imagens ao projeto
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Ocorreu um erro, tente novamente
-components:
-  schemas:
-    ProjectRequestBody:
-      type: 'object'
-      properties:
-        title:
-          type: 'string'
-        slug:
-          type: 'string'
-        description:
-          type: 'string'
-        category:
-          type: 'string'
-    ProjectSchema:
-      type: 'object'
-      properties:
-        title:
-          type: 'string'
-        description:
-          type: 'string'
-        category:
-          type: 'string'
+          description: "Ocorreu um erro, tente novamente"
+
 
 definitions:
-  User:
+  admin:
     type: 'object'
     properties:
       id:
         type: 'string'
-        example: '1'
+        example: '6473d2246ff912156c10a096'
       name:
         type: 'string'
         example: 'tiago'
       email:
         type: 'string'
         example: 'tiago@gmail.com'
+      passwoed:
+        type: 'string'
+        example: '1234'
       isAdmin:
         type: 'boolean'
         example: true
+  user:
+    type: 'object'
+    properties:
+      id:
+        type: 'string'
+        example: '6473d2246ff912156c10a096'
+      name:
+        type: 'string'
+        example: 'tiago'
+      email:
+        type: 'string'
+        example: 'tiago@gmail.com'
+      passwoed:
+        type: 'string'
+        example: '1234'
+      isAdmin:
+        type: 'boolean'
+        example: false
+  dados:
+    type: 'object'
+    properties:
+      title:
+        type: 'string'
+        example: 'teste'
+      description:
+        type: 'string'
+        example: 'teste'
+      slug:
+        type: 'string'
+        example: 'teste'
+  dadosComImagem:
+    type: 'object'
+    properties:
+      title:
+        type: 'string'
+        example: 'teste'
+      description:
+        type: 'string'
+        example: 'teste'
+      slug:
+        type: 'string'
+        example: 'teste'
+      featuredImage:
+        type: 'string'
+        example: 'uploads/images/teste.jpeg'
+
