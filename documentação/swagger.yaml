@@ -6,7 +6,7 @@ info:
 host: 'localhost:3000'
 basePath: '/'
 schemes:
-  - 'https'
+  - 'http'
 paths:
   #auth - relacionado ao usuario em sí, seja ele admin ou não
   /auth/register:
@@ -29,10 +29,10 @@ paths:
             properties:
               name:
                 type: 'string'
-                example: 'tiago'
+                example: 'teste'
               email:
                 type: 'string'
-                example: 'tiago@gmail.com'
+                example: 'teste@gmail.com'
               password:
                 type: 'string'
                 example: '1234'
@@ -64,10 +64,10 @@ paths:
             properties:
               email:
                 type: 'string'
-                example: 'tiago@gmail.com'
+                example: 'teste@gmail.com'
               password:
                 type: 'string'
-                example: '1234'
+                example: '1111'
       responses:
         '400':
           description: 'invalid password'
@@ -75,7 +75,7 @@ paths:
           description: 'user not found'
         '500':
           description: 'internal server error'
-  /post/addImage/{userId}:
+  /auth/post/addImage/{userId}:
     post:
       tags:
         - 'auth'
@@ -83,27 +83,30 @@ paths:
       description: 'Adiciona uma imagem de perfil para um usuário específico'
       consumes:
         - 'multipart/form-data'
-      produces:
-        - 'application/json'
       parameters:
-        - in: 'path'
-          name: 'userId'
-          description: 'ID do usuário'
+        - in: path
+          name: userId
           required: true
-          type: 'string'
-        - in: 'formData'
-          name: 'profileImage'
+          description: 'ID do usuário'
+          schema:
+            type: string
+            example: '647cee9577842b1cbc4c0597'
+        - in: formData
+          name: profileImage
           description: 'Imagem de perfil do usuário'
           required: true
-          type: 'file'
+          type: file
       responses:
+        '200':
+          description: 'Sucesso'
         '400':
           description: 'Nenhuma imagem enviada'
         '404':
           description: 'Usuário não encontrado'
         '500':
           description: 'Ocorreu um erro, tente novamente'
-  /forgot-password:
+
+  /auth/forgot-password:
     post:
       tags:
         - 'auth'
@@ -123,7 +126,7 @@ paths:
             properties:
               email:
                 type: 'string'
-                example: "tiago@gmail.com"
+                example: "teste@gmail.com"
       responses:
         '400':
           description: 'fail sending recover password mail'
@@ -131,7 +134,7 @@ paths:
           description: 'user not found'
         '500':
           description: 'internal server error'
-  /reset-password:
+  /auth/reset-password:
     post:
       tags:
         - 'auth'
@@ -151,10 +154,10 @@ paths:
             properties:
               email:
                 type: 'string'
-                example: "tiago@gmail.com"
+                example: "teste@gmail.com"
               token:
                 type: 'string'
-                example: "0a7b02a0b024ad1ea0bfbf4599004840d0dd97ff"
+                example: "3b9d58877c1020fa0469d1ca364c79dfd3cfc71f"
               newPassword:
                 type: 'string'
                 example: "1111"
@@ -165,27 +168,40 @@ paths:
           description: 'User not found'
         '500':
           description: 'Internal server error'
-  /user/{userId}/profile-image:
+  /auth/user/{userId}/profile-image:
     get:
       tags:
         - 'auth'
       summary: 'Obter imagem de perfil do usuário'
       description: 'Retorna a imagem de perfil do usuário com base no ID do usuário'
       produces:
-        - 'profile-image/*'
+        - 'image/png'
+        - 'image/jpeg'
       parameters:
-        - in: 'body'
-          name: 'userId'
+        - in: path
+          name: userId
           description: 'ID do usuário'
           required: true
           schema:
-            type: 'string'
-            example: "6473b988a7ce3c0e24913d67"
+            type: string
+            example: "647cee9577842b1cbc4c0597"
       responses:
+        '200':
+          description: 'Imagem de perfil do usuário encontrada'
+          content:
+            'image/png':
+              schema:
+                type: string
+                format: binary
+            'image/jpeg':
+              schema:
+                type: string
+                format: binary
         '404':
-          description: 'User or image not found'
+          description: 'Usuário ou imagem não encontrada'
         '500':
-          description: 'Failed to retrieve user image'
+          description: 'Falha ao recuperar a imagem do usuário'
+
   # exemplo - relacionado aos dados que o usúario pode adicionar e alterar,
   # dependendo de seu tipo, se ele é admin ou nao
   /exemplo/get:
@@ -224,55 +240,57 @@ paths:
       summary: 'Obter projeto específico'
       description: 'Retorna os dados de um projeto com base no slug'
       parameters:
-        - in: 'body'
+        - in: 'path'
           name: 'projectSlug'
           description: 'Slug do projeto'
           required: true
           schema:
-            type: "string"
-            example: "teste"
+            type: 'string'
+            example: 'ofkmgfgf'
       responses:
         '400':
           description: 'Nao foi possivel obter os dados do projeto. Tente novamente'
 
+
   /exemplo/post:
-   post:
-    tags:
-      - 'exemplo'
-    summary: 'post de dados'
-    description: 'post de dados'
-    operationId: 'signUp'
-    consumes:
-      - 'application/json'
-    produces:
-      - 'application/json'
-    parameters:
-      - in: 'body'
-        name: 'body'
-        description: 'Dados para o post'
-        required: true
-        schema:
-              type: 'object'
-              properties:
-                title:
-                  type: 'string'
-                  example: 'exemplo'
-                description:
-                  type: 'string'
-                  example: 'exemplo'
-                category:
-                  type: 'string'
-                  example: 'exemplo'
-      - in: body
-        name: Authorization
-        description: Token de autenticação do administrador
-        required: true
-        schema:
-            type: string
-            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDczYjljZmE3Y2UzYzBlMjQ5MTNkNmEiLCJpYXQiOjE2ODUzMTE5MjIsImV4cCI6MTY4NTM5ODMyMn0.AB9I9_EG1Yje4MdHWvZvmim5uV1fe5dFJSBEExA8J-A"
-    responses:
-       '400':
-         description: 'Nao foi possivel salvar seu projeto. Verifique os dados e tente novamente'
+    post:
+      tags:
+        - 'exemplo'
+      summary: 'post de dados'
+      description: 'post de dados'
+      operationId: 'signUp'
+      consumes:
+        - 'application/json'
+      produces:
+        - 'application/json'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'Dados para o post'
+          required: true
+          schema:
+            type: 'object'
+            properties:
+              title:
+                type: 'string'
+                example: 'ofkmgfgf'
+              description:
+                type: 'string'
+                example: 'rter'
+              category:
+                type: 'string'
+                example: 'exehfhgfmplo'
+        - in: 'header'
+          name: 'Authorization'
+          description: 'Token de autenticação do administrador'
+          required: true
+          schema:
+            type: 'string'
+            example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDdjZWU5NTc3ODQyYjFjYmM0YzA1OTciLCJpYXQiOjE2ODU5MDk5MDksImV4cCI6MTY4NTk5NjMwOX0.OR_4HM6uyXQMZEBuarO51DQnfHkjYLc_XP_nnNHDZPA"
+      responses:
+        '400':
+          description: 'Nao foi possivel salvar seu projeto. Verifique os dados e tente novamente'
+
   /exemplo/put/{projectId}:
     put:
       tags:
@@ -280,20 +298,20 @@ paths:
       summary: Atualizar um projeto
       description: Atualiza as informações de um projeto no banco de dados.
       parameters:
-        - in: body
+        - in: path
           name: projectId
           description: ID do projeto a ser atualizado
           required: true
           schema:
             type: string
-            example: "6473d2246ff912156c10a096"
-        - in: body
-          name: Authorization
-          description: Token de autenticação do administrador
+            example: "647cf1ff77842b1cbc4c05a6"
+        - in: 'header'
+          name: 'Authorization'
+          description: 'Token de autenticação do administrador'
           required: true
           schema:
-            type: string
-            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDczYjljZmE3Y2UzYzBlMjQ5MTNkNmEiLCJpYXQiOjE2ODUzMTE5MjIsImV4cCI6MTY4NTM5ODMyMn0.AB9I9_EG1Yje4MdHWvZvmim5uV1fe5dFJSBEExA8J-A"
+            type: 'string'
+            example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDdjZWU5NTc3ODQyYjFjYmM0YzA1OTciLCJpYXQiOjE2ODU5MDk5MDksImV4cCI6MTY4NTk5NjMwOX0.OR_4HM6uyXQMZEBuarO51DQnfHkjYLc_XP_nnNHDZPA"
         - in: body
           name: body
           description: Objeto contendo as informações atualizadas do projeto
@@ -331,53 +349,53 @@ paths:
           description: Erro ao atualizar o projeto
 
 
-  /delete/{projectId}:
+  /exemplo/delete/{projectId}:
     delete:
       tags:
         - 'exemplo'
       summary: Excluir um projeto
       description: Remove um projeto do banco de dados.
       parameters:
-        - in: body
+        - in: path
           name: projectId
           description: ID do projeto a ser excluído
           required: true
           schema:
             type: string
-            example: "6473d2246ff912156c10a096"
-        - in: body
-          name: Authorization
-          description: Token de autenticação do administrador
+            example: "647cf1ff77842b1cbc4c05a6"
+        - in: 'header'
+          name: 'Authorization'
+          description: 'Token de autenticação do administrador'
           required: true
           schema:
-            type: string
-            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDczYjljZmE3Y2UzYzBlMjQ5MTNkNmEiLCJpYXQiOjE2ODUzMTE5MjIsImV4cCI6MTY4NTM5ODMyMn0.AB9I9_EG1Yje4MdHWvZvmim5uV1fe5dFJSBEExA8J-A"
+            type: 'string'
+            example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDdjZWU5NTc3ODQyYjFjYmM0YzA1OTciLCJpYXQiOjE2ODU5MDk5MDksImV4cCI6MTY4NTk5NjMwOX0.OR_4HM6uyXQMZEBuarO51DQnfHkjYLc_XP_nnNHDZPA"
       responses:
         '201':
           description: 'deleted!'
         '400':
           description: "erro ao remover projeto, tente novamente"
-  /post/featured-image/{projectId}:
+  /exemplo/post/featured-image/{projectId}:
     post:
       tags:
         - 'exemplo'
       summary: Associar imagem destacada a um projeto
       description: Associa uma imagem destacada a um projeto específico.
       parameters:
-        - in: body
+        - in: path
           name: projectId
           description: ID do projeto ao qual a imagem será associada
           required: true
           schema:
             type: string
-            example: "6473d2246ff912156c10a096"
-        - in: body
-          name: Authorization
-          description: Token de autenticação do administrador
+            example: "647cf1ff77842b1cbc4c05a6"
+        - in: 'header'
+          name: 'Authorization'
+          description: 'Token de autenticação do administrador'
           required: true
           schema:
-            type: string
-            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDczYjljZmE3Y2UzYzBlMjQ5MTNkNmEiLCJpYXQiOjE2ODUzMTE5MjIsImV4cCI6MTY4NTM5ODMyMn0.AB9I9_EG1Yje4MdHWvZvmim5uV1fe5dFJSBEExA8J-A"
+            type: 'string'
+            example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDdjZWU5NTc3ODQyYjFjYmM0YzA1OTciLCJpYXQiOjE2ODU5MDk5MDksImV4cCI6MTY4NTk5NjMwOX0.OR_4HM6uyXQMZEBuarO51DQnfHkjYLc_XP_nnNHDZPA"
         - in: formData
           name: featured-image
           description: Imagem destacada a ser associada
@@ -388,56 +406,45 @@ paths:
           description: "Nenhuma imagem enviada"
         '500':
           description: "Ocorreu um erro, tente novamente"
-
-
-  /post/featured-images/{projectId}:
+  /exemplo/post/featured-images/{projectId}:
     post:
       tags:
         - 'exemplo'
-      summary: Associar imagem(s) destacada(s) a um projeto
-      description: Associa uma ou mais imagens destacadas a um projeto específico.
+      summary: 'Associar imagem(s) destacada(s) a um projeto'
+      description: 'Associa uma ou mais imagens destacadas a um projeto específico'
+      consumes:
+        - multipart/form-data
       parameters:
-        - in: body
+        - in: path
           name: projectId
-          description: ID do projeto ao qual as imagens serão associadas
+          description: 'ID do projeto ao qual as imagens serão associadas'
           required: true
           schema:
             type: string
-            example: "6473d2246ff912156c10a096"
-        - in: body
-          name: Authorization
-          description: Token de autenticação do administrador
+            example: '647cf1ff77842b1cbc4c05a6'
+        - in: 'header'
+          name: 'Authorization'
+          description: 'Token de autenticação do administrador'
           required: true
           schema:
-            type: string
-            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDczYjljZmE3Y2UzYzBlMjQ5MTNkNmEiLCJpYXQiOjE2ODUzMTE5MjIsImV4cCI6MTY4NTM5ODMyMn0.AB9I9_EG1Yje4MdHWvZvmim5uV1fe5dFJSBEExA8J-A"
+            type: 'string'
+            example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDdjZWU5NTc3ODQyYjFjYmM0YzA1OTciLCJpYXQiOjE2ODU5MDk5MDksImV4cCI6MTY4NTk5NjMwOX0.OR_4HM6uyXQMZEBuarO51DQnfHkjYLc_XP_nnNHDZPA'
         - in: formData
-          name: featured-images
-          description: Arquivos de imagem a serem associados
+          name: images
+          description: 'Imagens destacadas do projeto'
           required: true
-          type: array
-          items:
-            type: string
-            format: binary
-
-        #requestBody:
-        #  required: true
-        #  content:
-        #    multipart/form-data:
-        #      schema:
-         #       type: object
-         #       properties:
-         #         images:
-         #           type: array
-         #           items:
-          #            type: string
-        #             format: binary*/
+          type: object
+          properties:
+            images:
+              type: array
+              items:
+                type: file
+                format: binary
       responses:
         '400':
-          description: "Nenhuma imagem enviada"
+          description: 'Nenhuma imagem enviada'
         '500':
-          description: "Ocorreu um erro, tente novamente"
-
+          description: 'Ocorreu um erro, tente novamente'
 
 definitions:
   admin:
@@ -455,6 +462,9 @@ definitions:
       passwoed:
         type: 'string'
         example: '1234'
+      profileImage: 
+        type: string
+        required: false
       isAdmin:
         type: 'boolean'
         example: true
@@ -476,6 +486,9 @@ definitions:
       isAdmin:
         type: 'boolean'
         example: false
+      profileImage: 
+        type: string
+        required: false
   dados:
     type: 'object'
     properties:
