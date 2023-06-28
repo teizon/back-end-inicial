@@ -428,7 +428,7 @@ paths:
           required: true
           schema:
             type: 'string'
-            example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDdjZWU5NTc3ODQyYjFjYmM0YzA1OTciLCJpYXQiOjE2ODU5MDk5MDksImV4cCI6MTY4NTk5NjMwOX0.OR_4HM6uyXQMZEBuarO51DQnfHkjYLc_XP_nnNHDZPA'
+            example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2NDdjZWU5NTc3ODQyYjFjYmM0YzA1OTciLCJpYXQiOjE2ODYxMDg3NzIsImV4cCI6MTY4NjE5NTE3Mn0.BVNMrdH7mKzjH-myUF82g4x5TAHxAuAhDiKUAEfEaSk'
         - in: formData
           name: images
           description: 'Imagens destacadas do projeto'
